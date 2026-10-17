@@ -4,7 +4,6 @@ import {
   type LovelaceRowConfig,
   type PowerFlowCardPlusConfig,
 } from "@flixlix-cards/shared/types";
-import "@flixlix-cards/shared/ui-editor/components/individual-devices-editor";
 import "@flixlix-cards/shared/ui-editor/components/link-subpage";
 import "@flixlix-cards/shared/ui-editor/components/subpage-header";
 import { batterySchema } from "@flixlix-cards/shared/ui-editor/schema/battery";
@@ -18,6 +17,7 @@ import { fireEvent, type HomeAssistant, type LovelaceCardEditor } from "custom-c
 import { LitElement, css, html, nothing } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { assert } from "superstruct";
+import "./power-individual-editor";
 import { advancedOptionsSchema, cardConfigStruct, generalConfigSchema } from "./schema/_schema-all";
 
 const CONFIG_PAGES: {
@@ -219,11 +219,11 @@ export class PowerFlowCardPlusEditor extends LitElement implements LovelaceCardE
           ${this._renderLegacyFieldsAlert()}${this._renderLegacyIndividualFieldsAlert()}
           <subpage-header @go-back=${this._goBack} page=${this._currentConfigPage}>
           </subpage-header>
-          <individual-devices-editor
+          <power-individual-editor
             .hass=${this.hass}
             .config=${this._config}
             @config-changed=${this._valueChanged}
-          ></individual-devices-editor>
+          ></power-individual-editor>
         `;
       }
 
@@ -290,7 +290,8 @@ export class PowerFlowCardPlusEditor extends LitElement implements LovelaceCardE
   }
 
   private _valueChanged(ev: any): void {
-    let config = ev.detail.value || "";
+    ev.stopPropagation?.();
+    let config = ev.detail.config ?? ev.detail.value ?? "";
 
     if (!this._config || !this.hass) {
       return;
@@ -310,6 +311,7 @@ export class PowerFlowCardPlusEditor extends LitElement implements LovelaceCardE
       };
     }
 
+    this._config = config;
     fireEvent(this, "config-changed", { config });
   }
 

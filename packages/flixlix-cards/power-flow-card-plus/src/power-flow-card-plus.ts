@@ -1101,9 +1101,21 @@ export class PowerFlowCardPlus extends LitElement {
     const filteredNotShownIndividualObjects = sortedIndividualObjects.filter(
       (individual) => individual.has
     );
-    const visibleIndividualObjects = filteredNotShownIndividualObjects.slice(
-      0,
-      maxVisibleIndividuals
+    // Explicit main preferences take priority over automatic devices, even when
+    // sorting by usage. Never drop a device when the diagram is full or narrow.
+    const mainCandidates = [
+      ...filteredNotShownIndividualObjects.filter(
+        (individual) => individual.field?.placement === "main"
+      ),
+      ...filteredNotShownIndividualObjects.filter(
+        (individual) =>
+          individual.field?.placement !== "main" && individual.field?.placement !== "additional"
+      ),
+    ];
+    const visibleIndividualObjects = mainCandidates.slice(0, maxVisibleIndividuals);
+    const visibleSet = new Set(visibleIndividualObjects);
+    const overflowIndividualObjects = filteredNotShownIndividualObjects.filter(
+      (individual) => !visibleSet.has(individual)
     );
 
     const individualFieldLeftTop = getTopLeftIndividual(visibleIndividualObjects);
@@ -1141,7 +1153,7 @@ export class PowerFlowCardPlus extends LitElement {
       home,
       nonFossil,
       individualObjs: visibleIndividualObjects,
-      overflowIndividualObjects: filteredNotShownIndividualObjects.slice(maxVisibleIndividuals),
+      overflowIndividualObjects,
       newDur,
       templatesObj,
       homeBatteryCircumference,
@@ -1272,7 +1284,7 @@ export class PowerFlowCardPlus extends LitElement {
     css`
       .individual-overflow {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(min(140px, 100%), 1fr));
+        grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 12px;
         padding: 0 16px 16px;
       }

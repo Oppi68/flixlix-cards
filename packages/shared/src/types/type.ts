@@ -75,6 +75,8 @@ export type GridPowerOutage = {
 };
 
 export type IndividualDeviceType = BaseConfigEntity & {
+  /** Power Flow Card Plus: preferred display area; excess main devices move below. */
+  placement?: "auto" | "main" | "additional";
   entity: string;
   color?: string;
   color_icon?: boolean;

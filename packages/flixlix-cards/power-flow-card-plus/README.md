@@ -538,16 +538,35 @@ I am still just one person working on this project and obviously have other thin
 
 This card is released under the [MIT License](LICENSE).
 
-### Additional individual devices
+### Additional individual devices and visual placement
 
-Configure as many entries in `entities.individual` as needed. The existing flow
-diagram keeps its responsive two/four connected circles. All remaining visible
-devices appear in a responsive grid below it, with their current value, icon,
-name, configured color and main entity actions. No additional device is silently
-dropped. Sorting and visibility filters apply before the split; hidden devices
-do not leave gaps. Rest-of-home accounting continues to use the full configured
-list, exactly once. Each extra tile draws its own home-to-device connection with animated dots
-using the existing flow-rate model and per-device inversion setting. Zero and
-unknown values do not animate. Global disable_dots and hidden-home settings
-are respected, and reduced-motion preferences visually suppress the dots.
-Secondary-information fields in the extra tiles remain outside this proposal.
+The existing visual configuration menu is retained. Open **Individual devices**
+to add a power sensor, edit its name/icon/color/actions, remove it or change its
+list priority with the up/down buttons. The list has no fixed item limit. Duplicate
+entities are rejected when adding/editing; the add picker rejects known energy
+units such as kWh. Select current power sensors in W or kW.
+
+Each row offers **Position**:
+
+- **Automatic** (default): fills available main-diagram slots in list order.
+- **Main diagram (preferred)**: takes priority over automatic devices.
+- **Additional area**: always appears below the main diagram.
+
+The main diagram retains two circles on narrow cards and four on wider cards
+(or four with `allow_layout_break`). If more devices prefer the main diagram
+than fit, the remaining devices appear below; none are dropped. Sorting by usage,
+when enabled, applies within the placement groups instead of list order. Existing
+configurations without `placement` behave as before, with excess devices now shown.
+The editor explains capacity and sorting and warns when more than four devices
+prefer the main diagram. A preference is not a guarantee on narrow displays.
+
+YAML remains supported: set `placement: auto`, `placement: main` or
+`placement: additional` on entries in `entities.individual`.
+
+Additional devices appear in a two-column grid with current value, icon, name,
+configured color and main entity actions. Visibility filters do not leave gaps.
+Rest-of-home accounting uses the full configured list exactly once, regardless of
+placement. Each tile draws a home-to-device connection with animated dots using
+the existing flow-rate model and inversion setting. Zero and unknown values do
+not animate. Global `disable_dots`, hidden home and reduced-motion are respected.
+Secondary-information fields in additional tiles are not yet displayed.

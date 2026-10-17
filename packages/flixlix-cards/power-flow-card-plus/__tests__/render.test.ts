@@ -333,4 +333,40 @@ describe("individual device overflow", () => {
     expect(container.querySelectorAll(".individual-overflow-flow").length).toBe(0);
     card.disconnectedCallback();
   });
+  test("explicit main placement takes priority, additional never fills a diagram slot", () => {
+    const card = setup(6);
+    card._config.entities.individual[0].placement = "additional";
+    card._config.entities.individual[5].placement = "main";
+    const data = card._computeRenderData();
+    expect(data.individualObjs.map((item: any) => item.entity)).toEqual([
+      "sensor.consumer_5",
+      "sensor.consumer_1",
+      "sensor.consumer_2",
+      "sensor.consumer_3",
+    ]);
+    expect(data.overflowIndividualObjects.map((item: any) => item.entity)).toEqual([
+      "sensor.consumer_0",
+      "sensor.consumer_4",
+    ]);
+    expect(data.homeUsageToDisplay.replace(/[^0-9]/g, "")).toBe("9940");
+    card.disconnectedCallback();
+  });
+
+  test("main preferences exceeding narrow capacity still render every consumer", () => {
+    const card = setup(6, false);
+    card._config.entities.individual.forEach((device: any) => (device.placement = "main"));
+    const data = card._computeRenderData();
+    expect(data.individualObjs).toHaveLength(2);
+    expect(data.overflowIndividualObjects).toHaveLength(4);
+    card.disconnectedCallback();
+  });
+
+  test("all consumers may use the additional area without disappearing", () => {
+    const card = setup(6);
+    card._config.entities.individual.forEach((device: any) => (device.placement = "additional"));
+    const data = card._computeRenderData();
+    expect(data.individualObjs).toHaveLength(0);
+    expect(data.overflowIndividualObjects).toHaveLength(6);
+    card.disconnectedCallback();
+  });
 });

@@ -85,6 +85,23 @@
     "unit_of_measurement": "Einheit",
     "unit_white_space": "Weißraum für Einheit",
     "use_metadata": "Metadaten verwenden",
-    "use_new_flow_rate_model": "Neues Fluss-Modell verwenden"
+    "use_new_flow_rate_model": "Neues Fluss-Modell verwenden",
+    "individual_layout": {
+      "help": "Verbraucher im Hauptdiagramm haben Vorrang vor automatischen Einträgen. Die Kartenbreite bestimmt die Anzahl der Plätze. Weitere Verbraucher erscheinen darunter; keiner wird ausgeblendet. Plätze oben",
+      "full": "Mehr als vier Verbraucher sollen ins Hauptdiagramm. Die ersten verfügbaren Einträge bleiben oben, die übrigen erscheinen darunter. Mit den Pfeilen änderst du die Priorität.",
+      "sorted": "Verbrauchssortierung ist aktiv. Die Positionswahl gilt weiterhin; innerhalb der Gruppen entscheidet der Verbrauch statt der Listenreihenfolge.",
+      "duplicate": "Diese Entität ist bereits eingetragen.",
+      "up": "Nach oben",
+      "down": "Nach unten",
+      "edit": "Bearbeiten",
+      "remove": "Entfernen",
+      "placement": "Position",
+      "auto": "Automatisch",
+      "main": "Hauptdiagramm (bevorzugt)",
+      "additional": "Zusatzbereich",
+      "add": "Verbraucher hinzufügen",
+      "power_entity": "Leistungssensor",
+      "power_help": "Wähle einen Sensor für aktuelle Leistung in W oder kW. Energiezähler in kWh sind keine aktuelle Leistung. Unter Bearbeiten findest du Name, Symbol, Farbe und weitere Optionen."
+    }
   }
 }

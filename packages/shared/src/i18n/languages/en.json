@@ -85,6 +85,23 @@
     "unit_of_measurement": "Unit",
     "unit_white_space": "Unit White Space",
     "use_metadata": "Use Metadata",
-    "use_new_flow_rate_model": "New Flow Rate Model"
+    "use_new_flow_rate_model": "New Flow Rate Model",
+    "individual_layout": {
+      "help": "Main-diagram devices have priority over automatic devices. Space depends on card width. Excess devices appear below; none are hidden. Main diagram slots",
+      "full": "More than four devices prefer the main diagram. The first available devices stay above; the rest appear below. Use the arrows to change priority.",
+      "sorted": "Usage sorting is enabled. Placement groups still apply; devices within each group are sorted by usage instead of list order.",
+      "duplicate": "This entity is already configured.",
+      "up": "Move up",
+      "down": "Move down",
+      "edit": "Edit",
+      "remove": "Remove",
+      "placement": "Position",
+      "auto": "Automatic",
+      "main": "Main diagram (preferred)",
+      "additional": "Additional area",
+      "add": "Add consumer",
+      "power_entity": "Power sensor",
+      "power_help": "Select a sensor reporting current power in W or kW. Energy counters in kWh are not current power. Use Edit for name, icon, color and other options."
+    }
   }
 }
