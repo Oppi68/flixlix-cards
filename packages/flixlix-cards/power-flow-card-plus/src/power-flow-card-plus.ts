@@ -56,7 +56,10 @@ import {
   computeFieldIcon,
   computeFieldName,
 } from "@flixlix-cards/shared/utils/compute-field-attributes";
-import { computeFlowRate } from "@flixlix-cards/shared/utils/compute-flow-rate";
+import {
+  computeFlowRate,
+  computeIndividualFlowRate,
+} from "@flixlix-cards/shared/utils/compute-flow-rate";
 import {
   checkHasBottomIndividual,
   checkHasRightIndividual,
@@ -69,6 +72,7 @@ import { computePowerDistributionAfterSolarAndBattery } from "@flixlix-cards/sha
 import { displayValue } from "@flixlix-cards/shared/utils/display-value";
 import { defaultValues, getDefaultConfig } from "@flixlix-cards/shared/utils/get-default-config";
 import { registerCustomCard } from "@flixlix-cards/shared/utils/register-custom-card";
+import { showLine } from "@flixlix-cards/shared/utils/show-line";
 import { sortIndividualObjects } from "@flixlix-cards/shared/utils/sort-individual-objects";
 import { coerceNumber } from "@flixlix-cards/shared/utils/utils";
 import {
@@ -77,7 +81,7 @@ import {
   type LovelaceCardEditor,
 } from "custom-card-helpers";
 import { type UnsubscribeFunc } from "home-assistant-js-websocket";
-import { html, LitElement, nothing, type PropertyValues, type TemplateResult } from "lit";
+import { css, html, LitElement, nothing, type PropertyValues, svg, type TemplateResult } from "lit";
 import { customElement, property, query, state } from "lit/decorators.js";
 import packageJson from "../package.json" with { type: "json" };
 
@@ -120,6 +124,7 @@ export class PowerFlowCardPlus extends LitElement {
         home: any;
         nonFossil: any;
         individualObjs: IndividualObject[];
+        overflowIndividualObjects: IndividualObject[];
         newDur: NewDur;
         templatesObj: TemplatesObj;
         homeBatteryCircumference: number;
@@ -199,7 +204,7 @@ export class PowerFlowCardPlus extends LitElement {
   }
 
   public getCardSize(): Promise<number> | number {
-    return 3;
+    return 3 + Math.ceil((this._renderData?.overflowIndividualObjects.length ?? 0) / 2);
   }
 
   private previousDur: { [name: string]: number } = {};
@@ -366,6 +371,7 @@ export class PowerFlowCardPlus extends LitElement {
       home,
       nonFossil,
       individualObjs,
+      overflowIndividualObjects,
       newDur,
       templatesObj,
       homeBatteryCircumference,
@@ -498,8 +504,97 @@ export class PowerFlowCardPlus extends LitElement {
             solar,
           })}
         </div>
+        ${overflowIndividualObjects.length
+          ? html`<div class="individual-overflow">
+              ${overflowIndividualObjects.map(
+                (individual) => html`
+                  <button
+                    type="button"
+                    class="individual-overflow-device"
+                    aria-label=${`${individual.name}: ${!this._isOverflowValueKnown(individual) ? "—" : getIndividualDisplayState(individual)}`}
+                    ?disabled=${this._config.clickable_entities === false}
+                    style=${individual.color
+                      ? `--individual-overflow-color: ${individual.color}`
+                      : ""}
+                    @click=${(event: MouseEvent) =>
+                      this.onEntityClick(event, individual.field, individual.entity)}
+                    @dblclick=${(event: MouseEvent) =>
+                      this.onEntityDoubleClick(event, individual.field, individual.entity)}
+                    @pointerdown=${(event: PointerEvent) =>
+                      this.onEntityPointerDown(event, individual.field, individual.entity)}
+                    @pointerup=${(event: PointerEvent) => this.onEntityPointerUp(event)}
+                    @pointercancel=${(event: PointerEvent) => this.onEntityPointerUp(event)}
+                  >
+                    ${this._renderOverflowFlow(individual, newDur)}
+                    ${individual.icon !== " "
+                      ? html`<ha-icon .icon=${individual.icon}></ha-icon>`
+                      : nothing}
+                    <span class="individual-overflow-name">${individual.name}</span>
+                    <span class="individual-overflow-value"
+                      >${!this._isOverflowValueKnown(individual)
+                        ? "—"
+                        : getIndividualDisplayState(individual)}</span
+                    >
+                  </button>
+                `
+              )}
+            </div>`
+          : nothing}
         ${dashboardLinkElement(this._config, this.hass)}
       </ha-card>
+    `;
+  }
+
+  private _isOverflowValueKnown(individual: IndividualObject): boolean {
+    const raw = this.hass.states[individual.entity]?.state;
+    return raw !== undefined && raw.trim() !== "" && Number.isFinite(Number(raw));
+  }
+
+  private _renderOverflowFlow(individual: IndividualObject, newDur: NewDur) {
+    if (this._config.entities.home?.hide) return nothing;
+    const power = individual.state;
+    const known =
+      this._isOverflowValueKnown(individual) && power !== null && Number.isFinite(power);
+    if (!showLine(this._config, known ? power : 0)) return nothing;
+    const index =
+      this._config.entities.individual?.findIndex((entry) => entry.entity === individual.entity) ??
+      -1;
+    const duration = computeIndividualFlowRate(
+      individual.field?.calculate_flow_rate,
+      index >= 0 ? newDur.individual[index] : undefined
+    );
+    const animate =
+      known && power > (individual.displayZeroTolerance ?? 0) && checkShouldShowDots(this._config);
+    return html`
+      <span class="individual-overflow-source" aria-hidden="true">
+        <ha-icon icon="mdi:home"></ha-icon>
+      </span>
+      ${svg`<svg
+          class="individual-overflow-flow"
+          viewBox="0 0 80 36"
+          aria-hidden="true"
+          focusable="false"
+        >
+          <path
+            d="M40 0 V36"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            opacity="${known && power > 0 ? 0.65 : 0.2}"
+          />
+          ${animate
+            ? svg`<circle class="individual-overflow-dot" r="2.5" fill="currentColor">
+                  <animateMotion
+                    dur="${duration}s"
+                    repeatCount="indefinite"
+                    calcMode="paced"
+                    path="M40 0 V36"
+                    keyPoints="${individual.invertAnimation ? "1;0" : "0;1"}"
+                    keyTimes="0;1"
+                  />
+                </circle>`
+            : nothing}
+        </svg>`}
     `;
   }
 
@@ -1046,6 +1141,7 @@ export class PowerFlowCardPlus extends LitElement {
       home,
       nonFossil,
       individualObjs: visibleIndividualObjects,
+      overflowIndividualObjects: filteredNotShownIndividualObjects.slice(maxVisibleIndividuals),
       newDur,
       templatesObj,
       homeBatteryCircumference,
@@ -1171,5 +1267,62 @@ export class PowerFlowCardPlus extends LitElement {
     }
   }
 
-  static styles = styles as any;
+  static styles = [
+    styles,
+    css`
+      .individual-overflow {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(min(140px, 100%), 1fr));
+        gap: 12px;
+        padding: 0 16px 16px;
+      }
+      .individual-overflow-device {
+        appearance: none;
+        font: inherit;
+        color: var(--primary-text-color);
+        background: var(--secondary-background-color);
+        border: 1px solid var(--individual-overflow-color, var(--divider-color));
+        border-radius: 16px;
+        padding: 12px;
+        display: grid;
+        justify-items: center;
+        gap: 6px;
+        min-width: 0;
+        cursor: pointer;
+      }
+      .individual-overflow-device:disabled {
+        cursor: default;
+        opacity: 1;
+      }
+      .individual-overflow-device:focus-visible {
+        outline: 2px solid var(--primary-color);
+        outline-offset: 2px;
+      }
+      .individual-overflow-device ha-icon {
+        color: var(--individual-overflow-color, var(--primary-text-color));
+      }
+      .individual-overflow-name {
+        overflow-wrap: anywhere;
+        text-align: center;
+      }
+      .individual-overflow-flow {
+        width: 80px;
+        height: 36px;
+        color: var(--individual-overflow-color, var(--primary-color));
+        pointer-events: none;
+      }
+      .individual-overflow-source ha-icon {
+        --mdc-icon-size: 18px;
+        color: var(--secondary-text-color);
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .individual-overflow-dot {
+          display: none;
+        }
+      }
+      .individual-overflow-value {
+        font-weight: 600;
+      }
+    `,
+  ] as any;
 }

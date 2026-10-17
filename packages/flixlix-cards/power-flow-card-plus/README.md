@@ -537,3 +537,17 @@ I am still just one person working on this project and obviously have other thin
 ## License
 
 This card is released under the [MIT License](LICENSE).
+
+### Additional individual devices
+
+Configure as many entries in `entities.individual` as needed. The existing flow
+diagram keeps its responsive two/four connected circles. All remaining visible
+devices appear in a responsive grid below it, with their current value, icon,
+name, configured color and main entity actions. No additional device is silently
+dropped. Sorting and visibility filters apply before the split; hidden devices
+do not leave gaps. Rest-of-home accounting continues to use the full configured
+list, exactly once. Each extra tile draws its own home-to-device connection with animated dots
+using the existing flow-rate model and per-device inversion setting. Zero and
+unknown values do not animate. Global disable_dots and hidden-home settings
+are respected, and reduced-motion preferences visually suppress the dots.
+Secondary-information fields in the extra tiles remain outside this proposal.
