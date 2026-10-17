@@ -2,4 +2,4 @@
 "power-flow-card-plus": minor
 ---
 
-Show additional individual consumers in a responsive grid with animated home-to-device connections instead of hiding entries beyond the diagram positions.
+Show additional individual consumers with animated flow connections. Extend the existing visual configuration menu with controls to add, edit, remove and reorder consumers, and choose automatic placement, the main diagram or the additional area.
