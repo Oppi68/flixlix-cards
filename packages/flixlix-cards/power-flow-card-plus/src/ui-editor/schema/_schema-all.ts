@@ -16,6 +16,7 @@ const baseLovelaceCardConfig = object({
   grid_options: any(),
   visibility: any(),
   disabled: optional(boolean()),
+  card_mod: optional(any()),
 });
 
 export const cardConfigStruct = assign(
